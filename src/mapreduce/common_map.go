@@ -57,15 +57,15 @@ func doMap(
 	//
 	// Your code here (Part I).
 	//
-	var fileNameArr []*os.File
+	var fileNameArr []string
 	for i := 1; i <= nReduce; i++ {
 		fileName := reduceName(jobName, mapTask, nReduce)
-		file, err := os.Create(fileName)
+		_, err := os.Create(fileName)
 		if err != nil {
 			fmt.Errorf("create file error: ", err)
 		}
 
-		fileNameArr[i] = file
+		fileNameArr[i] = fileName
 	}
 
 	fileContents, err := ioutil.ReadFile(inFile)
@@ -78,7 +78,7 @@ func doMap(
 		r := ihash(kv.Key)
 		file, _ := os.OpenFile(fileNameArr[r], os.O_CREATE|os.O_WRONLY, 0666)
 
-		enc := json.NewEncoder(fineNameArr[r])
+		enc := json.NewEncoder(file)
 		err := enc.Encode(&kv)
 		if err != nil {
 			fmt.Errorf("Encode error: ", err)
