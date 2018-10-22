@@ -59,7 +59,7 @@ func doMap(
 	//
 	var fileNameArr []string
 	for i := 1; i <= nReduce; i++ {
-		fileName := reduceName(jobName, mapTask, nReduce)
+		fileName := reduceName(jobName, mapTask, i)
 		_, err := os.Create(fileName)
 		if err != nil {
 			fmt.Errorf("create file error: ", err)
@@ -77,7 +77,7 @@ func doMap(
 	for _, kv := range kvArray {
 		r := ihash(kv.Key)
 		file, _ := os.OpenFile(fileNameArr[r], os.O_CREATE|os.O_WRONLY, 0666)
-
+		defer file.Close()
 		enc := json.NewEncoder(file)
 		err := enc.Encode(&kv)
 		if err != nil {
