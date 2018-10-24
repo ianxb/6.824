@@ -4,7 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 )
+
+type kvsort []KeyValue
+
+func (kv kvsort) Len() int {
+	return len(kv)
+}
+
+func (kv kvsort) Swap(i, j int) {
+	kv[i], kv[j] = kv[j], kv[i]
+}
+
+func (kv kvsort) Less(i, j int) bool {
+	return kv[i].Key < kv[j].Key
+}
 
 func doReduce(
 	jobName string, // the name of the whole MapReduce job
@@ -50,20 +65,21 @@ func doReduce(
 	//
 	// Your code here (Part I).
 	//
-	for i:=1;i<=nMap;i++{
+	for i := 1; i <= nMap; i++ {
 		var kv []KeyValue
-		fileName:=reduceName(jobName,i,reduceTask)
-		flow,err:=os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
-		if err!=nil{
-			fmt.Errorf("open file error: ",err)
+		fileName := reduceName(jobName, i, reduceTask)
+		flow, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			fmt.Errorf("open file error: ", err)
 		}
 		//kvArr,err:=ioutil.ReadFile(fileName)
-		enc:=json.NewDecoder(flow)
-		err=enc.Decode(&kv)
-		if err!=nil{
-			fmt.Errorf("decode error: ",err)
+		enc := json.NewDecoder(flow)
+		err = enc.Decode(&kv)
+		if err != nil {
+			fmt.Errorf("decode error: ", err)
 		}
 
+		sort.Sort(kvsort(kv))
 	}
 
 }
