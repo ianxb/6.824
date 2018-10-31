@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-type kvsort []KeyValue
+type kvsort []string
 
 func (kv kvsort) Len() int {
 	return len(kv)
@@ -18,7 +18,7 @@ func (kv kvsort) Swap(i, j int) {
 }
 
 func (kv kvsort) Less(i, j int) bool {
-	return kv[i].Key < kv[j].Key
+	return kv[i] < kv[j]
 }
 
 func doReduce(
@@ -65,10 +65,13 @@ func doReduce(
 	//
 	// Your code here (Part I).
 	//
+	var middlefile map[string][]string
+	var keyarray []string
 	for i := 1; i <= nMap; i++ {
 		var kv []KeyValue
 		fileName := reduceName(jobName, i, reduceTask)
 		flow, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
+		defer flow.Close()
 		if err != nil {
 			fmt.Errorf("open file error: ", err)
 		}
@@ -78,8 +81,20 @@ func doReduce(
 		if err != nil {
 			fmt.Errorf("decode error: ", err)
 		}
+		for _, i := range kv {
+			middlefile[i.Key] = append(middlefile[i.Key], i.Value)
+		}
+	}
 
-		sort.Sort(kvsort(kv))
+	//sort.Sort(data sort.Interface)
+
+	for k, _ := range middlefile {
+		keyarray = append(keyarray, k)
+	}
+	sort.Sort(kvsort(keyarray))
+
+	for _, i := range keyarray {
+		reduceF(i, middlefile[i])
 	}
 
 }
